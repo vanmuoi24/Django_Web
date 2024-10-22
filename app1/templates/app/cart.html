@@ -1,0 +1,178 @@
+{% extends "app/base.html" %} {% load static %} {% block cart_content %}
+<div class="container">
+  <!DOCTYPE html>
+  <html lang="vi">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Giỏ hàng</title>
+      <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+      />
+
+      <style>
+        body {
+          background-color: #f8f9fa;
+        }
+
+        .cart-container {
+          display: flex;
+          justify-content: space-between;
+          margin: 20px;
+        }
+
+        .cart-items {
+          width: 60%;
+        }
+
+        .checkout-details {
+          width: 35%;
+          background-color: rgb(25, 135, 84);
+          color: white;
+          padding: 20px;
+          border-radius: 5px;
+        }
+
+        .checkout-button {
+          background-color: #28a745;
+          color: white;
+          border: none;
+          padding: 10px;
+          cursor: pointer;
+          width: 100%;
+        }
+
+        .checkout-button:hover {
+          background-color: #218838;
+        }
+
+        .card {
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          transition: transform 0.2s ease-in-out;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+        }
+
+        .card:hover {
+          transform: scale(1.02);
+        }
+
+        .card-img-top {
+          height: 100px;
+          width: 100px;
+          margin-left: 10px;
+        }
+
+        .card-title {
+          font-weight: bold;
+          color: #333;
+        }
+
+        .card-text {
+          color: #666;
+          input {
+            width: 30px;
+          }
+        }
+
+        .cart-container h2 {
+          color: #007bff;
+        }
+      </style>
+    </head>
+
+    <body>
+      <div class="container cart-container">
+        <div class="cart-items">
+          <h2>Giỏ hàng</h2>
+          <p>
+            Bạn có <strong>{{ items|length }} sản phẩm</strong> trong giỏ hàng
+          </p>
+          {% for item in items %}
+          <div class="card mb-3">
+            <div>
+              <img
+                src="{{ item.product.image.url }}"
+                class="card-img-top"
+                alt="Ảnh sản phẩm"
+              />
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">{{ item.product.name }}</h5>
+              <p class="card-text">
+                Số lượng:
+                <input
+                  type="number"
+                  class="quantity-input"
+                  data-price="{{ item.product.price }}"
+                  data-product-id="{{ item.product.id }}"
+                  value="{{ item.quantity }}"
+                  min="0"
+                />
+                | Giá:
+                <span
+                  id="total-price-{{ item.product.id }}"
+                  class="price"
+                  data-price="{{ item.total_price }}"
+                >
+                  {{ item.total_price|floatformat:0 }}₫
+                </span>
+              </p>
+              <form
+                action="{% url 'remove_from_cart' item.product.id %}"
+                method="post"
+              >
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Xóa</button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="checkout-details">
+          <p>
+            Tổng số sản phẩm mua: <strong>{{ order.get_cart_items }}</strong>
+          </p>
+
+          <p>
+            Tổng:
+            <strong class="total-price" data-total="{{ order.get_cart_total }}">
+              {{ order.get_cart_total }}₫
+            </strong>
+          </p>
+
+          <button class="checkout-button">Thanh toán</button>
+        </div>
+      </div>
+
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          // Định dạng giá từng sản phẩm
+          const priceElements = document.querySelectorAll(".price");
+          priceElements.forEach(function (element) {
+            const price = parseFloat(element.getAttribute("data-price"));
+            element.textContent = price.toLocaleString("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            });
+          });
+
+          // Định dạng tổng số tiền
+          const totalElement = document.querySelector(".total-price");
+          const total = parseFloat(totalElement.getAttribute("data-total"));
+          totalElement.textContent = total.toLocaleString("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          });
+        });
+      </script>
+    </body>
+  </html>
+</div>
+
+{% endblock cart_content %}

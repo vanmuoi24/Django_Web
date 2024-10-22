@@ -1,0 +1,93 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% block main_content %}
+<!-- Bộ lọc sản phẩm -->
+<div class="col-12 d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Món ăn ngay</h3>
+  <form method="get" action="{% url 'home' %}" class="w-auto d-flex gap-2">
+    <select name="sort" class="form-select" onchange="this.form.submit()">
+      <option value="default" {% if sort_option == 'default' %}selected{% endif %}>Thứ tự mặc định</option>
+      <option value="low_to_high" {% if sort_option == 'low_to_high' %}selected{% endif %}>Giá từ thấp đến cao</option>
+      <option value="high_to_low" {% if sort_option == 'high_to_low' %}selected{% endif %}>Giá từ cao đến thấp</option>
+    </select>
+
+    <select class="form-select">
+      <option>Thực đơn</option>
+      <option>Món Heo</option>
+      <option>Món Canh</option>
+      <option>Món Cá</option>
+    </select>
+  
+  </form>
+</div>
+
+<div class="row">
+  {% for product in page_obj %}
+  <div class="col-md-3 mb-4">
+    <div class="card product-card">
+      <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" />
+      <div class="card-body">
+        <h5 class="card-title">{{ product.name }}</h5>
+        <p class="card-text">{{ product.description }}</p>
+        <p class="card-text">
+          <strong>Giá:</strong>
+          <span class="price" data-price="{{ product.price }}"></span>
+        </p>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const priceElements = document.querySelectorAll(".price");
+            priceElements.forEach(function (element) {
+              const price = parseFloat(element.getAttribute("data-price"));
+              element.textContent = price.toLocaleString("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              });
+            });
+          });
+        </script>
+        <div class="d-flex gap-2">
+          <a class="btn btn-primary">Xem chi tiết</a>
+          <button class="update-cart btn btn-success" data-product="{{ product.id }}" data-action="add">
+            Thêm vào giỏ hàng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <p>Không có sản phẩm nào được hiển thị.</p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Hiển thị các liên kết phân trang -->
+<div  class="pagination mt-3 d-flex justify-content-center"  >
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center align-items-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}&sort={{ sort_option }}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+      {% endif %}
+      
+      {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+          <a class="page-link" href="?page={{ num }}&sort={{ sort_option }}">{{ num }}</a>
+        </li>
+      {% endfor %}
+      
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}&sort={{ sort_option }}" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+
+{% endblock main_content %}
